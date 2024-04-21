@@ -21,7 +21,7 @@ Done!
 Produces a PlantUML class diagram from a C++ source file to `out.puml` by default.
 
 ```bash
-poetry run python src/main.py <source.cpp>
+poetry run python -m cpp_to_plantuml <source.cpp>
 ```
 
 You can enjoy and download your diagram for example with [PlantText](https://www.planttext.com/).
@@ -31,5 +31,5 @@ You can enjoy and download your diagram for example with [PlantText](https://www
 Read help for options and more information:
 
 ```bash
-poetry run python src/main.py --help
+poetry run python -m cpp_to_plantuml --help
 ```
