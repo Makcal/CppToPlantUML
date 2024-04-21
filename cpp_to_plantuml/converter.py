@@ -138,15 +138,19 @@ class Converter:
                             printed_aggregations = True
                             match = True
                             break
-                    if match:
-                        continue
+            if printed_aggregations:
+                f.write('\n')
+                            
+            printed_dependencies = False
+            for cls in self.classes.values():
+                for other_cls in self.classes.values():
                     for method in cls.methods:
                         if re.search(rf'\b{other_cls.pure_name}\b', method.return_type) or \
                                 re.search(rf'\b{other_cls.pure_name}\b', ' '.join(arg.type for arg in method.args)):
-                            f.write(f'{other_cls.pure_name} *-- {cls.pure_name}\n')
-                            printed_aggregations = True
+                            f.write(f'{other_cls.pure_name} <.. {cls.pure_name}\n')
+                            printed_dependencies = True
                             break
-            if printed_aggregations:
+            if printed_dependencies:
                 f.write('\n')
 
             f.write('@enduml\n')
