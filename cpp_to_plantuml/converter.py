@@ -125,6 +125,13 @@ class Converter:
                         'static' in (i.spelling for i in cursor.get_tokens()))
 
     @classmethod
+    def _is_method_abstract(cls, cursor: cindex.Cursor) -> bool:
+        if cursor.kind not in cls.METHOD_KINDS:
+            raise ValueError('Cursor is not a method')
+        tokens = [i.spelling for i in cursor.get_tokens()]
+        return tokens[-2:] == ['=', '0']
+
+    @classmethod
     def _parse_method(cls, cursor: cindex.Cursor) -> CppMethod:
         if cursor.kind not in cls.METHOD_KINDS:
             raise ValueError('Cursor is not a method')
@@ -136,7 +143,7 @@ class Converter:
         else:
             method = CppMethod(cursor.spelling, cls._parse_function_type(cursor),
                                AccessSpecifier.from_clang(cursor.access_specifier),
-                               is_abstract=cursor.is_pure_virtual_method(),
+                               is_abstract=cls._is_method_abstract(cursor),
                                is_static=cursor.is_static_method())
         for arg in cursor.get_arguments():
             method.args.append(CppVar(arg.displayname, cls._parse_var_type(arg)))
@@ -156,7 +163,10 @@ class Converter:
             printed_bases = False
             for cls in self.classes.values():
                 for base in cls.base_classes:
-                    f.write(f'{cls.pure_name} --|> {base.partition("<")[0]}\n')
+                    base_is_interface = False
+                    if base in self.classes and self.classes[base].is_interface:
+                        base_is_interface = True
+                    f.write(f'{cls.pure_name} {"..|>" if base_is_interface else "--|>"} {base.partition("<")[0]}\n')
                     printed_bases = True
             if printed_bases:
                 f.write('\n')

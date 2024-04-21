@@ -83,7 +83,7 @@ class CppClass:
 
     @cached_property
     def is_interface(self):
-        return all(method.is_abstract for method in self.methods) and not self.fields
+        return all(method.is_abstract or method.is_static for method in self.methods) and not self.fields
 
     @cached_property
     def pure_name(self):
