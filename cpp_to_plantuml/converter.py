@@ -65,6 +65,9 @@ class Converter:
         if cursor.kind == cindex.CursorKind.ENUM_DECL:
             self.classes[cursor.displayname] = CppEnum(cursor.displayname)
             return
+        if cursor.displayname != cursor.spelling and \
+                any(name.partition('<')[0] == cursor.spelling for name in self.classes):
+            return
         cls = CppClass(cursor.displayname)
         self.classes[cursor.displayname] = cls
 
