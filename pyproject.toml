@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "CppToPlantUML"
-version = "2.1.0"
+version = "2.2.0"
 description = "A simple script that generates a PlantUML class diagram from a C++ source file."
 authors = ["Maxim Fomin <fominmaxim3721@gmail.com>"]
 readme = "README.md"

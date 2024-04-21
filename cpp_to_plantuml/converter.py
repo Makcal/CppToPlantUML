@@ -6,7 +6,7 @@ import warnings
 
 from clang import cindex
 
-from cpp_to_plantuml.objects import CppClass, CppMethod, CppField, CppVar, AccessSpecifier
+from cpp_to_plantuml.objects import CppClass, CppMethod, CppField, CppVar, AccessSpecifier, CppEnum
 from cpp_to_plantuml.writers import AbstractWriter, PlantUmlWriter
 
 
@@ -24,7 +24,8 @@ class Converter:
     classes: dict[str, CppClass]
 
     CLASS_KINDS: set[cindex.CursorKind] = \
-        {cindex.CursorKind.CLASS_DECL, cindex.CursorKind.STRUCT_DECL, cindex.CursorKind.CLASS_TEMPLATE}
+        {cindex.CursorKind.CLASS_DECL, cindex.CursorKind.STRUCT_DECL, cindex.CursorKind.CLASS_TEMPLATE,
+         cindex.CursorKind.ENUM_DECL}
     METHOD_KINDS: set[cindex.CursorKind] = \
         {cindex.CursorKind.CXX_METHOD, cindex.CursorKind.FUNCTION_TEMPLATE, cindex.CursorKind.CONSTRUCTOR,
          cindex.CursorKind.FUNCTION_DECL}
@@ -61,6 +62,9 @@ class Converter:
         if cursor.kind not in self.CLASS_KINDS:
             raise ValueError('Cursor is not a class')
 
+        if cursor.kind == cindex.CursorKind.ENUM_DECL:
+            self.classes[cursor.displayname] = CppEnum(cursor.displayname)
+            return
         cls = CppClass(cursor.displayname)
         self.classes[cursor.displayname] = cls
 

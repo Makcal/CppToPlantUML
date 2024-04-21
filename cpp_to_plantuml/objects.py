@@ -76,6 +76,7 @@ class CppClass:
     base_classes: list[str] = dataclasses.field(default_factory=list)
     fields: list[CppField] = dataclasses.field(default_factory=list)
     methods: list[CppMethod] = dataclasses.field(default_factory=list)
+    is_enum: bool = False
 
     @cached_property
     def is_abstract(self):
@@ -96,3 +97,19 @@ class CppClass:
                 f'Fields: [{sep}{sep.join(map(str, self.fields))}\n],\n'
                 f'Methods: [{sep}{sep.join(map(str, self.methods))}\n],\n'
                 f'Base classes: {self.base_classes}')
+
+
+class CppEnum(CppClass):
+    def __init__(self, name: str):
+        super().__init__(name, is_enum=True)
+
+    @property
+    def is_abstract(self):
+        return False
+
+    @property
+    def is_interface(self):
+        return False
+
+    def __str__(self):
+        return f'Enum: {self.name}'

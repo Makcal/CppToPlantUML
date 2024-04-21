@@ -23,6 +23,9 @@ class PlantUmlWriter(AbstractWriter):
         return f'{var.name}: {var.type}' if self.postfix_style else f'{var.type} {var.name}'
 
     def write(self, class_: CppClass) -> str:
+        if class_.is_enum:
+            return f"enum {class_.name}"
+
         if class_.is_interface:
             res = "interface %s {\n" % class_.name
         else:
