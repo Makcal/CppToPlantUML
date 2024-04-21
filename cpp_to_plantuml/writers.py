@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from objects import CppClass, CppVar
+from cpp_to_plantuml.objects import CppClass, CppVar
 
 
 class AbstractWriter(ABC):
