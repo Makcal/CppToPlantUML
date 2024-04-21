@@ -147,7 +147,6 @@ class Converter:
                             f.write(f'{other_cls.pure_name} *-- {cls.pure_name}\n')
                             printed_aggregations = True
                             break
-
             if printed_aggregations:
                 f.write('\n')
 

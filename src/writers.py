@@ -31,9 +31,9 @@ class PlantUmlWriter(AbstractWriter):
         for field in class_.fields:
             res += (f"\t{field.access_specifier.symbol} " + ('{static} ' if field.is_static else '') +
                     f"{self.var_to_string(field.var)}\n")
-        if class_.fields:
-            res += '\n'
 
+        if class_.fields and class_.methods:
+            res += '\n'
         for method in class_.methods:
             values = {
                 'access': method.access_specifier.symbol,
@@ -47,8 +47,9 @@ class PlantUmlWriter(AbstractWriter):
                      if self.postfix_style
                      else "\t{access} {static}{abstract}{return_type} {name}({args})\n")
                     .format(**values))
-        if not class_.methods:
-            res += '\n'
+
+        if not class_.fields and not class_.methods:
+            res += "\n"
 
         res += "}"
         return res
