@@ -69,7 +69,7 @@ class Converter:
             if node.kind in self.CLASS_KINDS:
                 self._parse_class(node)
             elif node.kind == cindex.CursorKind.CXX_BASE_SPECIFIER:
-                cls.base_classes.append(node.spelling)
+                cls.base_classes.append(node.displayname)
             elif node.kind in self.VAR_KINDS:
                 cls.fields.append(self._parse_field(node))
             elif node.kind in self.METHOD_KINDS:
