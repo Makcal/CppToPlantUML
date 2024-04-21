@@ -2,6 +2,7 @@ import dataclasses
 import pathlib
 import re
 import typing
+import warnings
 
 from clang import cindex
 
@@ -76,13 +77,11 @@ class Converter:
                     continue
                 cls.methods.append(self._parse_method(node))
 
-    @classmethod
-    def _parse_field(cls, cursor: cindex.Cursor) -> CppField:
-        if cursor.kind not in cls.VAR_KINDS:
-            raise ValueError('Cursor is not a field')
-
-        tokens = [i.spelling for i in cursor.get_tokens()]
-        if cursor.type.spelling == 'int' and tokens[0] != 'int':
+    @staticmethod
+    def _parse_var_type(cursor: cindex.Cursor) -> str:
+        exclude: re.Pattern = re.compile(r'static|\[\[.*?]]|const(?:expr|eval|init)')
+        tokens = [i.spelling for i in cursor.get_tokens() if not exclude.fullmatch(i.spelling)]
+        if cursor.type.spelling in ('int', 'const int') and tokens[0] != 'int':
             assign_index = tokens.index('=') if '=' in tokens else len(tokens)
             right_angle_index = (len(tokens) - 1 - tokens[:assign_index][::-1].index('>')) if '>' in tokens else -1
             name_index = tokens.index(cursor.displayname, right_angle_index + 1, assign_index)
@@ -93,20 +92,50 @@ class Converter:
                 type_ += t
         else:
             type_ = cursor.type.spelling
-        var = CppVar(cursor.displayname, type_)
-        return CppField(var, AccessSpecifier.from_clang(cursor.access_specifier), 'static' in tokens)
+        return type_
+
+    @classmethod
+    def _parse_function_type(cls, cursor: cindex.Cursor) -> str:
+        if cursor.kind not in cls.METHOD_KINDS:
+            raise ValueError('Cursor is not a function')
+
+        exclude: re.Pattern = re.compile(r'static|virtual|explicit|inline|friend|\[\[.*?]]|const(?:expr|eval|init)')
+        tokens = [i.spelling for i in cursor.get_tokens() if not exclude.fullmatch(i.spelling)]
+        if cursor.result_type.spelling == 'int' and tokens[0] != 'int':
+            name_index = tokens.index('(') - 1
+            if name_index <= 0:
+                warnings.warn(f"Error. Can not detect type of function {cursor.displayname}. Returned int as default.")
+                return 'int'
+            type_ = tokens[0]
+            for t in tokens[1:name_index]:
+                if type_[-1].isalnum() and t[0].isalnum():
+                    type_ += ' '
+                type_ += t
+        else:
+            type_ = cursor.result_type.spelling
+        return type_
+
+    @classmethod
+    def _parse_field(cls, cursor: cindex.Cursor) -> CppField:
+        if cursor.kind not in cls.VAR_KINDS:
+            raise ValueError('Cursor is not a field')
+
+        var = CppVar(cursor.displayname, cls._parse_var_type(cursor))
+        return CppField(var, AccessSpecifier.from_clang(cursor.access_specifier),
+                        'static' in (i.spelling for i in cursor.get_tokens()))
 
     @classmethod
     def _parse_method(cls, cursor: cindex.Cursor) -> CppMethod:
+        # TODO: detect constructors
         if cursor.kind not in cls.METHOD_KINDS:
             raise ValueError('Cursor is not a method')
 
-        method = CppMethod(cursor.spelling, cursor.result_type.spelling,
+        method = CppMethod(cursor.spelling, cls._parse_function_type(cursor),
                            AccessSpecifier.from_clang(cursor.access_specifier),
                            is_abstract=cursor.is_pure_virtual_method(),
                            is_static=cursor.is_static_method())
         for arg in cursor.get_arguments():
-            method.args.append(CppVar(arg.spelling, arg.type.spelling))
+            method.args.append(CppVar(arg.displayname, cls._parse_var_type(arg)))
         return method
 
     def output(self, output: pathlib.Path, settings: Settings):
