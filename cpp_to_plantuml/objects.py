@@ -61,11 +61,13 @@ class CppMethod:
     args: list[CppVar] = dataclasses.field(default_factory=list)
     is_static: bool = False
     is_abstract: bool = False
+    is_constructor: bool = False
 
     def __str__(self):
         return (f'{self.access_specifier} {"static " if self.is_static else ""} '
                 f'{"abstract " if self.is_abstract else ""} '
-                f'{self.name}({", ".join(map(str, self.args))}): {self.return_type}')
+                f'{self.name}({", ".join(map(str, self.args))})'
+                + ': {self.return_type}' if not self.is_constructor else '')
 
 
 @dataclasses.dataclass

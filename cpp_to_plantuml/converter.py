@@ -126,14 +126,18 @@ class Converter:
 
     @classmethod
     def _parse_method(cls, cursor: cindex.Cursor) -> CppMethod:
-        # TODO: detect constructors
         if cursor.kind not in cls.METHOD_KINDS:
             raise ValueError('Cursor is not a method')
 
-        method = CppMethod(cursor.spelling, cls._parse_function_type(cursor),
-                           AccessSpecifier.from_clang(cursor.access_specifier),
-                           is_abstract=cursor.is_pure_virtual_method(),
-                           is_static=cursor.is_static_method())
+        if cursor.kind == cindex.CursorKind.CONSTRUCTOR:
+            method = CppMethod(cursor.spelling, 'void',
+                               AccessSpecifier.from_clang(cursor.access_specifier),
+                               is_constructor=True)
+        else:
+            method = CppMethod(cursor.spelling, cls._parse_function_type(cursor),
+                               AccessSpecifier.from_clang(cursor.access_specifier),
+                               is_abstract=cursor.is_pure_virtual_method(),
+                               is_static=cursor.is_static_method())
         for arg in cursor.get_arguments():
             method.args.append(CppVar(arg.displayname, cls._parse_var_type(arg)))
         return method

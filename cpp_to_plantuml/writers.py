@@ -38,14 +38,16 @@ class PlantUmlWriter(AbstractWriter):
             values = {
                 'access': method.access_specifier.symbol,
                 'name': method.name,
-                'return_type': method.return_type,
+                'return_type': method.return_type if not method.is_constructor else '',
+                'return_type_prefix': ': ' if not method.is_constructor else '',
+                'return_type_suffix': ' ' if not method.is_constructor else '',
                 'args': ', '.join(map(self.var_to_string, method.args)),
                 'static': '{static} ' if method.is_static else '',
                 'abstract': '{abstract} ' if method.is_abstract else ''
             }
-            res += (("\t{access} {static}{abstract}{name}({args}): {return_type}\n"
+            res += (("\t{access} {static}{abstract}{name}({args}){return_type_prefix}{return_type}\n"
                      if self.postfix_style
-                     else "\t{access} {static}{abstract}{return_type} {name}({args})\n")
+                     else "\t{access} {static}{abstract}{return_type}{return_type_suffix}{name}({args})\n")
                     .format(**values))
 
         if not class_.fields and not class_.methods:
