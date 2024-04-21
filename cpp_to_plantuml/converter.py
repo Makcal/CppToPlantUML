@@ -171,20 +171,24 @@ class Converter:
             if printed_bases:
                 f.write('\n')
 
+            aggregations: set[tuple[str, str]] = set()
             printed_aggregations = False
             for cls in self.classes.values():
                 for other_cls in self.classes.values():
                     for field in cls.fields:
                         if re.search(rf'\b{other_cls.pure_name}\b', field.type):
                             f.write(f'{other_cls.pure_name} *-- {cls.pure_name}\n')
+                            aggregations.add((cls.pure_name, other_cls.pure_name))
                             printed_aggregations = True
                             break
             if printed_aggregations:
                 f.write('\n')
-                            
+
             printed_dependencies = False
             for cls in self.classes.values():
                 for other_cls in self.classes.values():
+                    if (cls.pure_name, other_cls.pure_name) in aggregations:
+                        continue
                     for method in cls.methods:
                         if re.search(rf'\b{other_cls.pure_name}\b', method.return_type) or \
                                 re.search(rf'\b{other_cls.pure_name}\b', ' '.join(arg.type for arg in method.args)):
