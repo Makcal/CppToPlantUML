@@ -184,15 +184,22 @@ class Converter:
             if printed_aggregations:
                 f.write('\n')
 
+            dependencies: set[tuple[str, str]] = set()
             printed_dependencies = False
             for cls in self.classes.values():
                 for other_cls in self.classes.values():
-                    if (cls.pure_name, other_cls.pure_name) in aggregations:
+                    if cls == other_cls or \
+                            other_cls.name in cls.base_classes or \
+                            (cls.pure_name, other_cls.pure_name) in aggregations or \
+                            any((self.classes[base].pure_name, other_cls.pure_name) in dependencies
+                                for base in cls.base_classes
+                                if base in self.classes):
                         continue
                     for method in cls.methods:
                         if re.search(rf'\b{other_cls.pure_name}\b', method.return_type) or \
                                 re.search(rf'\b{other_cls.pure_name}\b', ' '.join(arg.type for arg in method.args)):
                             f.write(f'{other_cls.pure_name} <.. {cls.pure_name}\n')
+                            dependencies.add((cls.pure_name, other_cls.pure_name))
                             printed_dependencies = True
                             break
             if printed_dependencies:
