@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "CppToPlantUML"
-version = "0.1.0"
+version = "1.0.0"
 description = "A simple script that generates a PlantUML class diagram from a C++ source file."
 authors = ["Maxim Fomin <fominmaxim3721@gmail.com>"]
 readme = "README.md"
@@ -8,6 +8,8 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+clang = "^17.0.6"
+libclang = "^18.1.1"
 
 
 [build-system]
