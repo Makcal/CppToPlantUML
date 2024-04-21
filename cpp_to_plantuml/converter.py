@@ -164,12 +164,10 @@ class Converter:
             printed_aggregations = False
             for cls in self.classes.values():
                 for other_cls in self.classes.values():
-                    match = False
                     for field in cls.fields:
                         if re.search(rf'\b{other_cls.pure_name}\b', field.type):
                             f.write(f'{other_cls.pure_name} *-- {cls.pure_name}\n')
                             printed_aggregations = True
-                            match = True
                             break
             if printed_aggregations:
                 f.write('\n')
