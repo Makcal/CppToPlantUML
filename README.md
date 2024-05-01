@@ -24,7 +24,7 @@ Produces a PlantUML class diagram from a C++ source file to `out.puml` by defaul
 poetry run python -m cpp_to_plantuml <source.cpp>
 ```
 
-You can enjoy and download your diagram for example with [PlantText](https://www.planttext.com/).
+You can enjoy and download your diagram for example with [PlantText](https://www.planttext.com/) or compile into many formats using [PlantUML](https://plantuml.com/download).
 
 ### Help
 
