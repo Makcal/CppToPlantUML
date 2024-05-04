@@ -76,7 +76,7 @@ class Converter:
             if node.kind in self.CLASS_KINDS:
                 self._parse_class(node)
             elif node.kind == cindex.CursorKind.CXX_BASE_SPECIFIER:
-                cls.base_classes.append(node.displayname)
+                cls.base_classes.append(node.displayname.rpartition('::')[2])
             elif node.kind in self.VAR_KINDS:
                 cls.fields.append(self._parse_field(node))
             elif node.kind in self.METHOD_KINDS:
@@ -99,7 +99,7 @@ class Converter:
                 type_ += t
         else:
             type_ = cursor.type.spelling
-        return type_
+        return type_.rpartition('::')[2]
 
     @classmethod
     def _parse_function_type(cls, cursor: cindex.Cursor) -> str:
@@ -120,7 +120,7 @@ class Converter:
                 type_ += t
         else:
             type_ = cursor.result_type.spelling
-        return type_
+        return type_.rpartition('::')[2]
 
     @classmethod
     def _parse_field(cls, cursor: cindex.Cursor) -> CppField:
